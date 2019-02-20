@@ -1,4 +1,7 @@
+
 import numpy as np
+
+from os.path import isfile
 
 
 class Label:
@@ -53,6 +56,9 @@ class Label:
 
 def lread(file_path,label_type=Label):
 
+	if not isfile(file_path):
+		return []
+
 	objs = []
 	with open(file_path,'r') as fd:
 		for line in fd:
@@ -78,6 +84,15 @@ def lwrite(file_path,labels,write_probs=True):
 			else:
 				fd.write('%d %f %f %f %f\n' % (cl,cc[0],cc[1],wh[0],wh[1]))
 
+
+def dknet_label_conversion(R,img_width,img_height):
+	WH = np.array([img_width,img_height],dtype=float)
+	L  = []
+	for r in R:
+		center = np.array(r[2][:2])/WH
+		wh2 = (np.array(r[2][2:])/WH)*.5
+		L.append(Label(ord(r[0]),tl=center-wh2,br=center+wh2,prob=r[1]))
+	return L
 
 
 class Shape():
@@ -105,11 +120,11 @@ class Shape():
 		self.pts 	= np.array([float(value) for value in values]).reshape((2,ss))
 		self.text   = text
 
-def readShapes(path):
+def readShapes(path,obj_type=Shape):
 	shapes = []
 	with open(path) as fp:
 		for line in fp:
-			shape = Shape()
+			shape = obj_type()
 			shape.read(line)
 			shapes.append(shape)
 	return shapes

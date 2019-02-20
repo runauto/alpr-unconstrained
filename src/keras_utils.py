@@ -3,10 +3,11 @@ import numpy as np
 import cv2
 import time
 
-from label import Label
 from os.path import splitext
-from utils import getWH, nms
-from projection_utils import getRectPts, find_T_matrix
+
+from src.label import Label
+from src.utils import getWH, nms
+from src.projection_utils import getRectPts, find_T_matrix
 
 
 class DLabel (Label):
@@ -17,6 +18,13 @@ class DLabel (Label):
 		br = np.amax(pts,1)
 		Label.__init__(self,cl,tl,br,prob)
 
+def save_model(model,path,verbose=0):
+	path = splitext(path)[0]
+	model_json = model.to_json()
+	with open('%s.json' % path,'w') as json_file:
+		json_file.write(model_json)
+	model.save_weights('%s.h5' % path)
+	if verbose: print 'Saved to %s' % path
 
 def load_model(path,custom_objects={},verbose=0):
 	from keras.models import model_from_json
